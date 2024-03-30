@@ -60,7 +60,9 @@
             // gameOverTextLabel
             // 
             this.gameOverTextLabel.AutoSize = true;
-            this.gameOverTextLabel.Location = new System.Drawing.Point(482, 421);
+            this.gameOverTextLabel.BackColor = System.Drawing.Color.Transparent;
+            this.gameOverTextLabel.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.gameOverTextLabel.Location = new System.Drawing.Point(387, 416);
             this.gameOverTextLabel.Name = "gameOverTextLabel";
             this.gameOverTextLabel.Size = new System.Drawing.Size(0, 20);
             this.gameOverTextLabel.TabIndex = 5;

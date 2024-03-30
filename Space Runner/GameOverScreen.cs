@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -27,7 +29,8 @@ namespace Space_Runner
 
         private void exitButton_Click(object sender, EventArgs e)
         {
-            Form1.ChangeScreen(this, new FinalAnimation());
+            Thread.Sleep(1000);
+            Application.Exit();
         }
     }
 }

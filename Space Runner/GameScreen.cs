@@ -5,7 +5,9 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -17,6 +19,7 @@ namespace Space_Runner
     {
         #region Global Variables
         public static int score = 0;
+        public static int frequency = 50; //frequency of spawning objects(asteroids)
 
         #region Cursor Variables
         Point cursorPosition;
@@ -30,15 +33,13 @@ namespace Space_Runner
         double rotationAngle;
         int dx;
         int dy;
-
-        float RectangleCenterX;
-        float RectangleCenterY;
-
         #endregion
 
         #region Asteroid Variables
         List<Asteroids> asteroidList = new List<Asteroids>();
         Random asteroidRand = new Random();
+        int asteroidSpawnTime = 0;
+
 
         #endregion
 
@@ -140,6 +141,11 @@ namespace Space_Runner
             starShipExplosionImageList.Add(Properties.Resources.sExplosion5);
             starShipExplosionImageList.Add(Properties.Resources.sExplosion6);
             starShipExplosionImageList.Add(Properties.Resources.sExplosion7);
+            #endregion
+
+            #region intialize game variables
+            score = 0;
+            asteroidSpawnTime = 0;
 
             #endregion
 
@@ -151,7 +157,7 @@ namespace Space_Runner
             #endregion
 
             //THIS IS TEST CODE (TEMPORARY)
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 1; i++)
             {
                 GenerateAsteroids();
             }
@@ -159,6 +165,15 @@ namespace Space_Runner
 
         private void gameTimer_Tick(object sender, EventArgs e)
         {
+            #region Update Game Variables
+            score++;
+            scoreLabel.Text = score.ToString();
+
+            if (score == 1500) //Winning Score
+            {
+                gameOver();
+            }
+            #endregion
 
             #region Cursor Position
             Point cursorPosition = Cursor.Position;
@@ -171,11 +186,16 @@ namespace Space_Runner
 
             #endregion
 
-
             #region Asteroid Control
             foreach (Asteroids asteroid in asteroidList)
             {
                 asteroid.Move();
+
+                if (asteroid.x < 0)
+                {
+                    asteroidList.Remove(asteroid);
+                    break;
+                }
             }
 
             foreach (Asteroids ast in asteroidList)
@@ -190,6 +210,13 @@ namespace Space_Runner
             }
             #endregion
 
+            if (asteroidSpawnTime % frequency == 0)
+            {
+                for (int i = 0; i > 2; i++)
+                {
+                    GenerateAsteroids();
+                }
+            }
             #region Starship Control
             if (downArrowDown)
             {
@@ -202,7 +229,6 @@ namespace Space_Runner
             if (rightArrowDown)
             {
                 starship.Move(4);
-
             }
             if (leftArrowDown)
             {
@@ -248,6 +274,13 @@ namespace Space_Runner
             }
             #endregion
 
+            #region Blaster Code
+            foreach (blaster b in blasterList)
+            {
+                b.Move();
+            }
+            #endregion
+
             #region HyperSpaceAnimation
             foreach (HyperSpaceAnimation r in rectangleList)
             {
@@ -261,33 +294,13 @@ namespace Space_Runner
                     r.rectangleList.Remove(r);
                 }
             }
-
-            if (animationCountDown >= 0)
-            {
                 for (int i = 0; i < 9; i++)
                 {
                     GenerateHyperspace();
-
-                    if (i == 8)
-                    {
-                        //backBrush = new SolidBrush(Color.White);
-                        //backPen = new Pen(Color.White);
-                    }
                 }
-            }
-            animationCountDown--;
-
-            #endregion
-
-            #region Startship Explosion
-
             #endregion
 
 
-            foreach(blaster b in blasterList)
-            {
-                b.Move();
-            }
 
             Refresh();
         }
@@ -309,16 +322,15 @@ namespace Space_Runner
         private void GenerateAsteroids()
         {
             #region Create Asteteroids
-            int x = width + 20;
-            int y = asteroidRand.Next(-10, height);
-            int size = asteroidRand.Next(8, 60);
-            int speed = asteroidRand.Next(4, 10);
+                int x = width + 20;
+                int y = asteroidRand.Next(-10, height);
+                int size = asteroidRand.Next(8, 60);
+                int speed = asteroidRand.Next(4, 10);
 
-            Asteroids asteroid = new Asteroids(x, y, size, speed);
-            asteroidList.Add(asteroid);
+                Asteroids asteroid = new Asteroids(x, y, size, speed);
+                asteroidList.Add(asteroid);
             #endregion
         }
-
         private void GenerateBlaster()
         {
             #region Create Blaster Shots
@@ -357,8 +369,6 @@ namespace Space_Runner
         private void GameScreen_MouseMove(object sender, MouseEventArgs e)
         {
             // Calculate the angle between the center of the rectangle and the cursor position
-            RectangleCenterY = starship.x;
-            RectangleCenterX = starship.y;
 
             double yVal = (e.Y - starship.y + starship.sHeight / 2);
             double xVal = (e.X - starship.x + starship.sWidth / 2);
@@ -493,8 +503,6 @@ namespace Space_Runner
             {
                 e.Graphics.FillEllipse(redBrush, blaster.x, blaster.y, blasterWidth, blasterHeight);
             }
-
-
             #endregion
 
             #region Starship Painting

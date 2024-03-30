@@ -643,16 +643,6 @@ namespace Space_Runner.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ast1__1_ {
-            get {
-                object obj = ResourceManager.GetObject("ast1__1_", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ast1__10_ {
             get {
                 object obj = ResourceManager.GetObject("ast1__10_", resourceCulture);
@@ -1116,6 +1106,16 @@ namespace Space_Runner.Properties {
         internal static System.Drawing.Bitmap ast1__9_ {
             get {
                 object obj = ResourceManager.GetObject("ast1__9_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap astIMG {
+            get {
+                object obj = ResourceManager.GetObject("astIMG", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

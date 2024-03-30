@@ -148,9 +148,6 @@
   <data name="ast1__19_" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ast1 (19).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ast1__1_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ast1 (1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="ast1__20_" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ast1 (20).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -261,6 +258,9 @@
   </data>
   <data name="ast1__9_" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ast1 (9).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="astIMG" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ast1 (1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="baseStarShip" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\7.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
