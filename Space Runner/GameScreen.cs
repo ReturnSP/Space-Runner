@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -14,12 +17,32 @@ using System.Xml;
 
 namespace Space_Runner
 {
-
     public partial class GameScreen : UserControl
     {
+        /// <summary>
+        /// INSTRUCTIONS
+        /// Controls:
+        /// k - Accelerate
+        /// s - shoot blast
+        /// 
+        /// Goal - Avoid asteroids to survive and get as much score as possible
+        /// The Red bar is the health bar 
+        /// 
+        /// </summary>
+        
+        ///TO DO LIST:
+        ///5. Fix the asteroid spawning so that the asteroids per round = the round count
+        ///6. MAKE SURE TO CHECK REQUIREMENTS BEFORE RESUMBMITTING
         #region Global Variables
         public static int score = 0;
-        public static int frequency = 50; //frequency of spawning objects(asteroids)
+
+        SoundPlayer blasterSound = new SoundPlayer(Properties.Resources.blasterSound); //Set sound player
+
+        #region New Round Varibles
+        bool newRound = false; //Check if it is time to start the next round
+        int roundCount = 0;
+        int prevRound = 0;
+        #endregion
 
         #region Cursor Variables
         Point cursorPosition;
@@ -36,11 +59,11 @@ namespace Space_Runner
         #endregion
 
         #region Asteroid Variables
+        Asteroids asteroid;
         List<Asteroids> asteroidList = new List<Asteroids>();
+        public List<Image> asteroidImgList = new List<Image>();
         Random asteroidRand = new Random();
-        int asteroidSpawnTime = 0;
-
-
+        int asteroidsOnScreen = 0;
         #endregion
 
         #region Form Variables
@@ -51,12 +74,7 @@ namespace Space_Runner
         #region HyperSpaceAnimationVariables
         List<HyperSpaceAnimation> rectangleList = new List<HyperSpaceAnimation>();
         Random animationRandom = new Random();
-
-        float animationLength = 10;
-        float animationWidth = 25;
-
         public static int animationCountDown = 90;
-
         #endregion
 
         #region StarShip Variables
@@ -66,21 +84,20 @@ namespace Space_Runner
         public List<Image> starShipExplosionImageList = new List<Image>();
 
         //Blaster Variables
-        int blasterWidth = 30;
-        int blasterHeight = 10;
-
         List<blaster> blasterList = new List<blaster>();
+        int blasterCooldown = 10;
+        int accelerationCooldown = 250;
+
         #endregion
 
         #region Game Controls Variables
         public bool leftArrowDown, rightArrowDown, upArrowDown, downArrowDown;
-
         public bool kKeyDown, sKeyDown;
 
         #endregion
 
         #region Pens and Brushes
-        Pen yellowPen = new Pen(Color.Yellow, 4);
+        Pen yellowPen = new Pen(Color.Yellow, 3);
         Pen redPen = new Pen(Color.Red); //Health
         Pen bluePen = new Pen(Color.Blue); //Fuel
         Pen purplePen = new Pen(Color.Purple); //Ammo
@@ -114,7 +131,6 @@ namespace Space_Runner
         {
             InitializeComponent();
             InitializeGame();
-
         }
 
         public void InitializeGame()
@@ -133,6 +149,8 @@ namespace Space_Runner
             starShipImageList.Add(Properties.Resources.StarShipMovImage);
             starShipImageList.Add(Properties.Resources.StarShipDamage);
 
+            asteroidImgList.Add(Properties.Resources.asteroid);
+
             //Add explosion of star ship
             starShipExplosionImageList.Add(Properties.Resources.sExplosion);
             starShipExplosionImageList.Add(Properties.Resources.sExplosion2);
@@ -145,7 +163,6 @@ namespace Space_Runner
 
             #region intialize game variables
             score = 0;
-            asteroidSpawnTime = 0;
 
             #endregion
 
@@ -154,25 +171,20 @@ namespace Space_Runner
             fuelBar = new Rectangle(width - 390, height - 30, fuelBarWidth, 25);
             healthBar = new Rectangle(width - 600, height - 30, ammoBarWidth, 25);
 
+            healthBarWidth = 125;
+            fuelBarWidth = 125;
+            ammoBarWidth = 125;
             #endregion
-
-            //THIS IS TEST CODE (TEMPORARY)
-            for (int i = 0; i < 1; i++)
-            {
-                GenerateAsteroids();
-            }
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             #region Update Game Variables
             score++;
-            scoreLabel.Text = score.ToString();
+            blasterCooldown--; //Reset Blaster cooldown
+            accelerationCooldown--; //Reset acceleration cooldown
 
-            if (score == 1500) //Winning Score
-            {
-                gameOver();
-            }
+            scoreLabel.Text = score.ToString();
             #endregion
 
             #region Cursor Position
@@ -186,15 +198,53 @@ namespace Space_Runner
 
             #endregion
 
-            #region Asteroid Control
-            foreach (Asteroids asteroid in asteroidList)
+            if (roundCount != prevRound)
             {
-                asteroid.Move();
+                prevRound = roundCount;
+                GenerateAsteroids();
+                asteroidsOnScreen++;
+            }
 
-                if (asteroid.x < 0)
+            #region Round Control
+            //Setting up new round
+            if (asteroidsOnScreen == 0)
+            {
+                roundCount += 1;
+            }
+            #endregion
+
+            for (int i =0; i < asteroidList.Count; i++)
+            {
+                asteroidList[i].Move();
+                if (asteroidList[i].x < -30)
                 {
-                    asteroidList.Remove(asteroid);
-                    break;
+                    asteroidList.Remove(asteroidList[i]);
+                    asteroidsOnScreen--;
+                    i--;
+                }
+            }
+            
+            if (asteroidsOnScreen == 0)
+            {
+                for (int i = 0; i < roundCount*2; i++)
+                {
+                    GenerateAsteroids();
+                    asteroidsOnScreen++;
+                }
+            }
+            for (int i = 0; i < blasterList.Count; i++)
+            {
+                for (int j = 0; j < asteroidList.Count; j++)
+                {
+                    if (i < blasterList.Count) //If there is something to search for then find it (to make sure it isn't searching null)
+                    {
+                        if (blasterList[i].Collision(asteroidList[j]))
+                        {
+                            asteroidList.Remove(asteroidList[j]);
+                            asteroidsOnScreen--;
+                            blasterList.Remove(blasterList[i]);
+                        }
+                    }
                 }
             }
 
@@ -202,21 +252,22 @@ namespace Space_Runner
             {
                 if (starship.Collision(ast))
                 {
-                    StatBarOperations("Subtract Health", 50);
-                    healthBar.Width = healthBarWidth;
+                    StatBarOperations("Subtract Health", 30);
                     asteroidList.Remove(ast);
+                    asteroidsOnScreen--;
+                    break;
                 }
-                break;
+
+            }
+
+            #region Check for Loss
+            if (healthBar.Width < 0)
+            {
+                gameTimer.Enabled = false;
+                Form1.ChangeScreen(this, new GameOverScreen());
             }
             #endregion
 
-            if (asteroidSpawnTime % frequency == 0)
-            {
-                for (int i = 0; i > 2; i++)
-                {
-                    GenerateAsteroids();
-                }
-            }
             #region Starship Control
             if (downArrowDown)
             {
@@ -234,35 +285,45 @@ namespace Space_Runner
             {
                 starship.Move(3);
             }
-            if (kKeyDown) // This control is for accelertation and it will speed the starship up temporarily
+            if (accelerationCooldown < 0)
             {
-                starship.Xspeed += (int)1;
-                starship.Yspeed += (int)1;
-                StatBarOperations("Subtract Fuel", 10);
+                if (kKeyDown) // This control is for accelertation and it will speed the starship up temporarily
+                {
+                    starship.Xspeed += (int)1;
+                    starship.Yspeed += (int)1;
+                    StatBarOperations("Subtract Fuel", 20);
+                    fuelBar.Width = fuelBarWidth;
 
-                if (starship.Yspeed == 9)
-                {
-                    starship.Yspeed = 9;
-                }
-                if (starship.Xspeed == 9)
-                {
-                    starship.Xspeed = 9;
+                    if (starship.Yspeed == 9)
+                    {
+                        starship.Yspeed = 9;
+                    }
+                    if (starship.Xspeed == 9)
+                    {
+                        starship.Xspeed = 9;
+                    }
                 }
             }
             if (kKeyDown == false) //Slow down to constant speed if you aren't actively accelerating
             {
-                if (starship.Xspeed > 5 || starship.Yspeed > 5)
+                if (starship.Xspeed > 9 || starship.Yspeed > 9)
                 {
                     starship.Yspeed--;
                     starship.Xspeed--;
                 }
             }
-
-            if (sKeyDown == true)
+            
+            if (blasterCooldown < 0 && ammoBarWidth > 0)
             {
-                GenerateBlaster();
+                if (sKeyDown == true)
+                {
+                    blaster blaster = new blaster(starship.x, starship.y);
+                    blasterList.Add(blaster);
+                    blasterSound.Play();
+                    StatBarOperations("Subtract Ammo", 20);
+                    blasterCooldown = 10;
+                }
             }
-
             #endregion
 
             #region Drag
@@ -285,22 +346,20 @@ namespace Space_Runner
             foreach (HyperSpaceAnimation r in rectangleList)
             {
                 r.Move();
-                if (r.x < 800)
+                if (r.x < 800 || r.x < -10)
                 {
                     r.rectangleList.Remove(r);
                 }
-                if (r.y < 800)
+                if (r.y < 800 || r.y < 0)
                 {
                     r.rectangleList.Remove(r);
                 }
             }
-                for (int i = 0; i < 9; i++)
-                {
-                    GenerateHyperspace();
-                }
+            for (int i = 0; i < 3; i++)
+            {
+                GenerateHyperspace();
+            }
             #endregion
-
-
 
             Refresh();
         }
@@ -321,24 +380,16 @@ namespace Space_Runner
 
         private void GenerateAsteroids()
         {
-            #region Create Asteteroids
-                int x = width + 20;
-                int y = asteroidRand.Next(-10, height);
-                int size = asteroidRand.Next(8, 60);
-                int speed = asteroidRand.Next(4, 10);
+            #region Create Asteroids
+            int x = width + 20;
+            int y = asteroidRand.Next(0, height);
+            int size = asteroidRand.Next(8, 60);
+            int speed = asteroidRand.Next(4, 10);
 
-                Asteroids asteroid = new Asteroids(x, y, size, speed);
-                asteroidList.Add(asteroid);
+            Asteroids asteroid = new Asteroids(x, y, size, speed);
+            asteroidList.Add(asteroid);
             #endregion
         }
-        private void GenerateBlaster()
-        {
-            #region Create Blaster Shots
-            blaster blaster = new blaster(starship.x, starship.y, -dx / 10, -dy / 10);
-            blasterList.Add(blaster);
-            #endregion
-        }
-
         private void GameScreen_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             #region Key Press Tracking
@@ -368,18 +419,20 @@ namespace Space_Runner
 
         private void GameScreen_MouseMove(object sender, MouseEventArgs e)
         {
-            // Calculate the angle between the center of the rectangle and the cursor position
+            #region Rotation Code
+            //// Calculate the angle between the center of the rectangle and the cursor position
 
-            double yVal = (e.Y - starship.y + starship.sHeight / 2);
-            double xVal = (e.X - starship.x + starship.sWidth / 2);
+            //double yVal = (e.Y - starship.y + starship.sHeight / 2);
+            //double xVal = (e.X - starship.x + starship.sWidth / 2);
 
-            dx = e.Y - starship.y;
-            dy = e.X - starship.x;
+            //dx = e.Y - starship.y;
+            //dy = e.X - starship.x;
 
-            rotationAngle = (double)Math.Atan2(yVal, xVal) * (180 / Math.PI);
+            //rotationAngle = (double)Math.Atan2(yVal, xVal) * (180 / Math.PI);
 
             // Redraw the form (same as a refresh but looks cooler)
             this.Invalidate();
+            #endregion
         }
 
         private void GameScreen_KeyUp(object sender, KeyEventArgs e)
@@ -416,9 +469,8 @@ namespace Space_Runner
             {
                 if (amount > 0)
                 {
-                    //healthBarWidth -= 50 ;
-                    //amount--;
-                    healthBar.Width -= amount;
+                    healthBarWidth -= amount;
+                    healthBar.Width = healthBarWidth;
                 }
             }
 
@@ -426,8 +478,7 @@ namespace Space_Runner
             {
                 if (amount > 0)
                 {
-                    fuelBarWidth--;
-                    amount--;
+                    fuelBarWidth -= amount;
                     fuelBar.Width = fuelBarWidth;
                 }
             }
@@ -436,29 +487,14 @@ namespace Space_Runner
             {
                 if (amount > 0)
                 {
-                    ammoBarWidth--;
-                    amount--;
+                    ammoBarWidth -= amount;
                     ammoBar.Width = ammoBarWidth;
                 }
             }
             #endregion
-
         }
-
-        private void gameOver()
-        {
-            Form1.ChangeScreen(this, new GameOverScreen());
-        }
-
         private void GameScreen_Paint(object sender, PaintEventArgs e)
         {
-            #region Background Region
-            Rectangle background = new Rectangle(0, 0, width, height);
-            e.Graphics.DrawRectangle(backPen, background);
-            e.Graphics.FillRectangle(backBrush, background);
-
-            #endregion
-
             #region HyperSpaceAnimation
             foreach (HyperSpaceAnimation r in rectangleList)
             {
@@ -470,19 +506,17 @@ namespace Space_Runner
             #region Asteroids
             foreach (Asteroids asteroid in asteroidList)
             {
-                e.Graphics.FillEllipse(redBrush, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+                //e.Graphics.FillEllipse(redBrush, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+                e.Graphics.DrawImage(asteroidImgList[0], asteroid.x, asteroid.y, asteroid.size, asteroid.size);
             }
-
             #endregion
 
             #region Cursor Paint
             e.Graphics.DrawEllipse(bluePen, cursorPositionX, cursorPositionY, 15, 15);
-
             #endregion
 
             #region Stat Bar Painting
             //Draw Health, Fuel, Ammo Bar
-
             e.Graphics.DrawRectangle(yellowPen, width - 170, height - 30, 125, 25);
             e.Graphics.DrawRectangle(yellowPen, width - 390, height - 30, 125, 25);
             e.Graphics.DrawRectangle(yellowPen, width - 600, height - 30, 125, 25);
@@ -501,7 +535,7 @@ namespace Space_Runner
             #region Blaster Painting
             foreach (blaster blaster in blasterList)
             {
-                e.Graphics.FillEllipse(redBrush, blaster.x, blaster.y, blasterWidth, blasterHeight);
+                e.Graphics.FillRectangle(redBrush, blaster.x, blaster.y, blaster.width, blaster.height);
             }
             #endregion
 
@@ -522,11 +556,9 @@ namespace Space_Runner
                 e.Graphics.DrawImage(starShipImageList[1], 0 - starship.sWidth / 2, 0 - starship.sHeight / 2, starship.sWidth, starship.sHeight);
             }
 
-
             // Reset transformations
             e.Graphics.ResetTransform();
             #endregion
-
         }
     }
 }

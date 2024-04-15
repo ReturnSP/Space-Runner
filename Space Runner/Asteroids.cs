@@ -19,24 +19,23 @@ namespace Space_Runner
             this.y = y;
             this.size = size;
             this.Xspeed = Xspeed;
-            AsteroidCurve();
+            //AsteroidCurve();
         }
 
         public void Move()
         {
-            SpeedLimit();
+            //SpeedLimit();
 
             x -= Xspeed;
-            y -= Yspeed;
 
-            if(y < GameScreen.height && y > GameScreen.height - 70)
-            {
-                Yspeed++;
-            }
-            if (y > 0 && y < 70)
-            {
-                Yspeed--;
-            }
+            //if(y < GameScreen.height && y > GameScreen.height - 70)
+            //{
+            //    Yspeed++;
+            //}
+            //if (y > 0 && y < 70)
+            //{
+            //    Yspeed--;
+            //}
         }
         private void AsteroidCurve()
         {

@@ -643,16 +643,6 @@ namespace Space_Runner.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ast1__10_ {
-            get {
-                object obj = ResourceManager.GetObject("ast1__10_", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ast1__11_ {
             get {
                 object obj = ResourceManager.GetObject("ast1__11_", resourceCulture);
@@ -1113,6 +1103,16 @@ namespace Space_Runner.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap asteroid {
+            get {
+                object obj = ResourceManager.GetObject("asteroid", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap astIMG {
             get {
                 object obj = ResourceManager.GetObject("astIMG", resourceCulture);
@@ -1137,6 +1137,15 @@ namespace Space_Runner.Properties {
             get {
                 object obj = ResourceManager.GetObject("baseStarShip1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream blasterSound {
+            get {
+                return ResourceManager.GetStream("blasterSound", resourceCulture);
             }
         }
         

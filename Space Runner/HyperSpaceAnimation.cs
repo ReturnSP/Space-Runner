@@ -71,10 +71,8 @@ namespace Space_Runner
             int val8 = animationRandom.Next(0, 255);
             val8++;
 
-            Color.FromArgb(val1, val2, val3, val4);
             hyperPen = new Pen(Color.FromArgb(val1, val2, val3, val4));
             hyperBrush = new SolidBrush(Color.FromArgb(val5, val6, val7, val8));
-
 
             SetPoints();
         }
@@ -98,7 +96,6 @@ namespace Space_Runner
             //RectanglePoints[1] = new PointF(111 * scale + x * speed, 120 * scale2 + y * speed);
             //RectanglePoints[2] = new PointF(110 * scale + x * speed, 100 * scale2 + y * speed);
             //RectanglePoints[3] = new PointF(110 * scale + x * speed, 120 * scale2 + y * speed);
-
         }
         public void Move()
         {
